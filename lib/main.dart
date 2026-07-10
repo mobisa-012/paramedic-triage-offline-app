@@ -16,8 +16,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF102A43)
         ),
-      ),
-      fontFamily: "Roboto"
+        fontFamily: "Roboto"
+      ),      
       home: const MyHomePage(title: 'Paramedic Triage Offline App'),
     );
   }
