@@ -4,16 +4,19 @@ import 'package:paramedic_triage/core/domain/triage_record.dart';
 import 'package:paramedic_triage/screens/triage_form_screen/widgets/priority_selector.dart';
 
 class RecordCard extends StatelessWidget {
-  const RecordCard({super.key, required this.record});
+  const RecordCard({super.key, required this.record, this.onTap});
 
   final TriageRecord record;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final color = priorityColors[record.priority]!;
     final critical = record.isCritical;
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: critical ? color.withOpacity(0.06) : Colors.white,
@@ -83,6 +86,7 @@ class RecordCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

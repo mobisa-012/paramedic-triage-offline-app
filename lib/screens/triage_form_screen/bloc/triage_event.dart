@@ -37,3 +37,17 @@ class FailureSimulationToggled extends TriageEvent {
   @override
   List<Object?> get props => [enabled];
 }
+
+class TriageDeleted extends TriageEvent {
+  const TriageDeleted(this.record);
+  final TriageRecord record;
+  @override
+  List<Object?> get props => [record];
+}
+
+class TriageRestored extends TriageEvent {
+  const TriageRestored(this.record);
+  final TriageRecord record;
+  @override
+  List<Object?> get props => [record];
+}

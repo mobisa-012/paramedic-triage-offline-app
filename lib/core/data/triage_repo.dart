@@ -21,6 +21,10 @@ class TriageRepo {
 
   Stream<void> watchRecords() => store.watch();
 
+  Future<void> deleteRecord(String id) => store.deleteRecord(id);
+
+  Future<void> restoreRecord(TriageRecord record) => store.saveRecord(record);
+
   Future<TriageRecord> submitRecord({
     required String patientName,
     required String condition,

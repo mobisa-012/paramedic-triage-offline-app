@@ -63,7 +63,7 @@ class _TriageFormScreenState extends State<TriageFormScreen> {
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         title: const Text(
-          'TRIAGE INTAKE',
+          'Triage Intake',
           style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5),
         ),
         backgroundColor: const Color(0xFF102A43),
@@ -106,8 +106,8 @@ class _TriageFormScreenState extends State<TriageFormScreen> {
                   online ? const Color(0xFF2E7D32) : const Color(0xFFF9A825),
               content: Text(
                 online
-                    ? 'Record saved — uploading'
-                    : 'Record saved on device — will sync when back online',
+                    ? 'Record saved. Uploading...'
+                    : 'Record saved on device. Will sync when back online.',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ));
@@ -130,7 +130,7 @@ class _TriageFormScreenState extends State<TriageFormScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 32),
                           child: Center(
                             child: Text(
-                              'No patients logged yet.\nSaved records appear here — online or offline.',
+                              'No patients logged yet.\nSaved records appear here, online or offline.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.black.withOpacity(0.4),
@@ -252,7 +252,7 @@ class _TriageFormScreenState extends State<TriageFormScreen> {
       builder: (context, state) => Row(
         children: [
           Text(
-            'LOGGED PATIENTS (${state.records.length})',
+            'Logged Patients (${state.records.length})',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w800,
@@ -325,7 +325,7 @@ class _OfflineBanner extends StatelessWidget {
                   Icon(Icons.wifi_off, size: 16, color: Colors.black87),
                   SizedBox(width: 8),
                   Text(
-                    'Offline — records save on device and sync later',
+                    'Offline. Records save on device and sync later',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,

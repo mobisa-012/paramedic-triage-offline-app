@@ -24,6 +24,8 @@ class TriageBloc extends Bloc<TriageEvent, TriageState> {
     on<TriageStoreChanged>(onStoreChanged);
     on<TriageSyncRequested>(onSyncRequested);
     on<FailureSimulationToggled>(onFailureToggled);
+    on<TriageDeleted>(onDeleted);
+    on<TriageRestored>(onRestored);
 
     storeSubscription = repo
         .watchRecords()
@@ -70,6 +72,20 @@ class TriageBloc extends Bloc<TriageEvent, TriageState> {
   ) {
     mockApiClient.simulateFailure = event.enabled;
     emit(state.copyWith(simulateFailure: event.enabled));
+  }
+
+  Future<void> onDeleted(
+    TriageDeleted event,
+    Emitter<TriageState> emit,
+  ) async {
+    await repo.deleteRecord(event.record.id);
+  }
+
+  Future<void> onRestored(
+    TriageRestored event,
+    Emitter<TriageState> emit,
+  ) async {
+    await repo.restoreRecord(event.record);
   }
 
   @override

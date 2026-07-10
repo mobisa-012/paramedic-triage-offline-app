@@ -17,6 +17,8 @@ class LocalStore {
 
   Future<void> saveRecord(TriageRecord record) => _box.put(record.id, record);
 
+  Future<void> deleteRecord(String id) => _box.delete(id);
+
   TriageRecord? getRecord(String id) => _box.get(id);
 
   List<TriageRecord> getAllRecords() {

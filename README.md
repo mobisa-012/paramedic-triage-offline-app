@@ -4,15 +4,14 @@ Offline-first Paramedic Triage Intake mobile application built with Flutter, fea
 Stack:  **Flutter (Dart)**, **BLoC**, **Hive**, and **connectivity_plus**.
 
 ## Architecture
-The app is layered so that the UI is entirely decoupled from persistence and sync logic. Each layer only knows about the one directly beneath it:
-
-# Architecture
+The app is layered so that the UI is entirely decoupled from persistence and sync logic. Each layer only knows about the one directly beneath it. Both screens sit on top of the **same** `TriageBloc` instance (provided once, above the bottom nav), so intake and records always see a consistent, live view of the queue:
 
 ```text
 ┌─────────────────────────────────────────────┐
-│ UI (Triage Form Screen)                     │
-│ - Displays data                             │
-│ - Sends user actions to the BLoC            │
+│ HomeShell — bottom NavigationBar             │
+│ - Intake tab: Triage Form Screen             │
+│ - Records tab: Records Screen + Detail       │
+│ (IndexedStack keeps both tabs' state alive)  │
 └───────────────────┬─────────────────────────┘
                     │ Events / States
                     ▼
@@ -25,15 +24,15 @@ The app is layered so that the UI is entirely decoupled from persistence and syn
                     │
                     ▼
 ┌─────────────────────────────────────────────┐
-│ TriageRepo                           │
+│ TriageRepo                                  │
 │ - Offline-first logic                       │
-│ - Saves locally                             │
+│ - Saves / deletes / restores locally        │
 │ - Uploads pending records                   │
 └───────────────┬───────────────────┬─────────┘
                 │                   │
                 ▼                   ▼
 ┌──────────────────────┐   ┌──────────────────────┐
-│ LocalStore (Hive)    │   │ MockApiClient        │
+│ LocalStore (Hive)    │   │ MockAPIClient        │
 │ - Stores data offline│   │ - Simulates API      │
 │ - Reads pending data │   │ - 2s delay           │
 └──────────────────────┘   └──────────────────────┘
@@ -63,15 +62,20 @@ lib/
 │   └── sync/
 │       └── sync_service.dart          # Connectivity watcher, triggers background sync
 └── screens/
-    └── triage_form_screen/
-        ├── triage_form_screen.dart    # Triage intake screen (form + logged patients)
-        ├── bloc/
-        │   ├── triage_bloc.dart       # TriageBloc
-        │   ├── triage_event.dart      # Bloc events
-        │   └── triage_state.dart      # Bloc state
-        └── widgets/
-            ├── priority_selector.dart # P1-P5 priority picker
-            └── record_card.dart       # Logged patient card with sync status
+    ├── home_shell/
+    │   └── home_shell.dart            # Bottom NavigationBar, hosts the two tabs below
+    ├── triage_form_screen/
+    │   ├── triage_form_screen.dart    # Triage intake screen (form + logged patients)
+    │   ├── bloc/
+    │   │   ├── triage_bloc.dart       # TriageBloc — shared by both screens
+    │   │   ├── triage_event.dart      # Bloc events
+    │   │   └── triage_state.dart      # Bloc state
+    │   └── widgets/
+    │       ├── priority_selector.dart # P1-P5 priority picker
+    │       └── record_card.dart       # Logged patient card with sync status
+    └── records_screen/
+        ├── records_screen.dart        # Full record list, swipe-to-delete with confirmation
+        └── record_detail_screen.dart  # Read-only detail view for a single record
 
 test/
 ├── triage_repo_test.dart              # TriageRepo offline/sync behaviour
@@ -100,16 +104,26 @@ test/
 | App resumed | `didChangeAppLifecycleState(resumed)` triggers a drain — anything missed while suspended is retried |
 | App killed / restarted | Cold-start drain in `SyncService.start()` picks up all leftovers |
 
+### Deleting records
+
+Deletion goes through the same offline-first repository as everything else: `TriageRepo.deleteRecord(id)` removes the record from the Hive box, and `restoreRecord(record)` re-inserts it (used for undo-style flows). Both are exposed to the UI as bloc events (`TriageDeleted`, `TriageRestored`) rather than being called directly, so a delete on the Records tab flows through the same `store.watch()` stream that keeps the Intake tab's list live — both tabs update immediately without any manual refresh wiring.
 
 ## The UI
-Single screen, optimised for fast thumb input under pressure:
+Two tabs behind a bottom `NavigationBar`, optimised for fast thumb input under pressure:
 
+### Intake tab (Triage Form Screen)
 - **Priority selector** — five 64px-tall tap targets in one row (no dropdown, no scrolling). P1 (deep red `#B71C1C`) and P2 (deep orange `#E65100`) are visually dominant with a warning glyph, so criticality is not encoded by colour alone; P3–P5 are deliberately muted.
 - **Critical record cards** — P1/P2 entries get a thick hazard rail and tinted background, scannable at arm's length.
 - **Sync badges** — every record shows *Pending sync* (amber) / *Syncing…* / *Synced* (green) / *Retry pending*, making the offline queue visibly trustworthy.
 - **Offline banner** — an amber strip appears when connectivity drops: *"Offline — records save on device and sync later"*. Submitting offline is a first-class flow, not an error.
 - **Validation** — name and condition cannot be blank; a priority must be selected. Inline errors, no dialogs.
 - **Debug failure switch** (bug icon, app bar) — forces the mock API to return failures so the retry queue can be demonstrated on demand.
+
+### Records tab (Records Screen + Detail)
+- **Full patient list** — every record ever logged on this device, newest first, with the same sync badge used on the intake tab.
+- **Tap a record** to open a read-only detail view (full condition text, status, sync state, timestamp, device-generated record ID).
+- **Swipe left to delete** — nothing is removed on swipe alone. It raises an `AlertDialog` ("Delete record?") with **Cancel** and **Delete** buttons; the record is only deleted once the user explicitly confirms. Cancelling snaps the tile back into place.
+- **Sync now** button appears in the app bar whenever there's a pending count > 0, dispatching the same `TriageSyncRequested` event used on the intake tab.
 
 ## Setup
 
@@ -139,3 +153,4 @@ Covers: offline durability (record survives failed upload), successful sync, old
 3. Submit two more records → snackbar confirms *"Record saved on device — will sync when back online"*; both cards show amber *Pending sync* badges. No error screens, UI never blocks.
 4. Disable Airplane Mode — within moments the sync service detects restoration and drains the queue automatically: badges flip *Syncing…* → *Synced* one by one, oldest first, with zero user intervention.
 5. (Optional) Toggle the bug switch to force failures, submit, watch records park as *Retry pending*, then toggle off and tap *Sync now* to watch them recover.
+6. Switch to the **Records** tab — the same records appear instantly (shared bloc, no refetch). Tap one to see its full detail view, then swipe it left and confirm the delete dialog to remove it.
