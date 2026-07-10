@@ -26,7 +26,6 @@ class RecordCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Hazard rail
             Container(
               width: critical ? 8 : 4,
               decoration: BoxDecoration(

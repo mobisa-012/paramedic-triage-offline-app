@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Hazard palette. P1/P2 use deep red / orange as required by the brief;
-/// P3–P5 stay deliberately muted so the critical levels dominate the eye.
 const priorityColors = <int, Color>{
   1: Color(0xFFB71C1C), // P1 — absolute critical, deep red
   2: Color(0xFFE65100), // P2 — critical, deep orange
@@ -18,9 +16,6 @@ const priorityLabels = <int, String>{
   5: 'MINOR',
 };
 
-/// Five large tap targets in a single row — one thumb reach, no dropdown,
-/// no scrolling. Selected level fills solid; P1/P2 also carry a warning
-/// glyph so criticality is not encoded by colour alone.
 class PrioritySelector extends StatelessWidget {
   const PrioritySelector({
     super.key,
@@ -95,7 +90,7 @@ class _PriorityButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            height: 64, // generous thumb target for gloved / rushed input
+            height: 64,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
