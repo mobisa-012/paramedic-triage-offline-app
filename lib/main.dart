@@ -7,7 +7,7 @@ import 'package:paramedic_triage/core/data/local_store.dart';
 import 'package:paramedic_triage/core/data/mock_api_client.dart';
 import 'package:paramedic_triage/core/data/triage_repo.dart';
 import 'package:paramedic_triage/core/sync/sync_service.dart';
-import 'package:paramedic_triage/screens/triage_form_screen/triage_form_screen.dart';
+import 'package:paramedic_triage/screens/home_shell/home_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +53,7 @@ class TriageApp extends StatelessWidget {
           ),
           fontFamily: 'Roboto',
         ),
-        home: TriageFormScreen(syncService: syncService),
+        home: HomeShell(syncService: syncService),
       ),
     );
   }
